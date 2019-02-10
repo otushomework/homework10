@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <mutex>
+#include <condition_variable>
 
 using Bulk = std::list<std::string>;
 
