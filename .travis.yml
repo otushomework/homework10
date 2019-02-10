@@ -2,28 +2,12 @@ language: cpp
 sudo: required
 before_script:
   - ls
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -y
-  - sudo apt-get install g++-7 -y
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
-  - gcc --version
-  - g++ --version
-  - cmake --version
-  - git clone https://github.com/Microsoft/vcpkg.git vcpkg
-  - cd vcpkg
-  - ./bootstrap-vcpkg.sh
-  - ./vcpkg integrate install
-  - ./vcpkg install range-v3
-  - ls
-  - pwd
-  - export VCPKG_ROOT=`pwd`
-  - cd ..
 script:
   - cmake .
   - cmake --build .
   - cmake --build . --target package
 deploy:
-  provider: script
-  skip_cleanup: true
-  script:
-    - curl -T range-0.0.$TRAVIS_BUILD_NUMBER-Linux.deb -ukafeg:$BINTRAY_API_KEY "https://api.bintray.com/content/kafeg/otus/homeworks/$TRAVIS_BUILD_NUMBER/range-0.0.$TRAVIS_BUILD_NUMBER-Linux.deb;deb_distribution=trusty;deb_component=main;deb_architecture=amd64;publish=1"
+  - provider: script
+    skip_cleanup: true
+    script:
+      - curl -T bulkmt-0.0.$TRAVIS_BUILD_NUMBER-Linux.deb -ukafeg:$BINTRAY_API_KEY "https://api.bintray.com/content/kafeg/otus/homeworks/$TRAVIS_BUILD_NUMBER/bulkmt-0.0.$TRAVIS_BUILD_NUMBER-Linux.deb;deb_distribution=trusty;deb_component=main;deb_architecture=amd64;publish=1"
