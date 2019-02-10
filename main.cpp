@@ -8,6 +8,7 @@
 #include <thread>
 #include <vector>
 #include <map>
+#include <mutex>
 
 using Bulk = std::list<std::string>;
 
