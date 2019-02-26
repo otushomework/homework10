@@ -253,12 +253,12 @@ protected:
     std::map<Worker *, int> m_commandCount;
 };
 
-class ScreenWritter : public IBulker
+class ScreenWriter : public IBulker
 {
 public:
 
-    ScreenWritter()
-        : m_worker(std::bind(&ScreenWritter::write, this, std::placeholders::_1)) { }
+    ScreenWriter()
+        : m_worker(std::bind(&ScreenWriter::write, this, std::placeholders::_1)) { }
 
     void push_back(Bulk commands)
     {
@@ -355,8 +355,8 @@ int main(int argc, const char *argv[])
 
     Parser parser(bulkCount);
 
-    ScreenWritter screenWritter;
-    parser.subscribe(std::bind(&ScreenWritter::push_back, &screenWritter, std::placeholders::_1));
+    ScreenWriter screenWritter;
+    parser.subscribe(std::bind(&ScreenWriter::push_back, &screenWritter, std::placeholders::_1));
 
     FileWriter fileWriter(2); //set file writter thread count here
     parser.subscribe(std::bind(&FileWriter::push_back, &fileWriter, std::placeholders::_1));

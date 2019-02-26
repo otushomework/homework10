@@ -5,8 +5,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 #проект
 project(bulkmt VERSION 0.0.$ENV{TRAVIS_BUILD_NUMBER})
 
+find_package( Threads )
+
 #сборка исполняемого файла
 add_executable(${PROJECT_NAME} main.cpp)
+target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} )
 
 #задаем параметры компилятора
 set_target_properties(${PROJECT_NAME} PROPERTIES
