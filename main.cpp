@@ -13,10 +13,11 @@
 
 using Bulk = std::list<std::string>;
 
+template<typename T>
 class Worker
 {
 public:
-    Worker(std::function<void(Bulk)> workFunction) : m_running(false), m_workFunction(workFunction)
+    Worker(std::function<void(T)> workFunction) : m_running(false), m_workFunction(workFunction)
     {
         start();
     }
@@ -33,7 +34,7 @@ public:
         stop();
     }
 
-    void push_back(Bulk commands)
+    void push_back(T commands)
     {
         {
             std::lock_guard<std::mutex> lk(m_mutex);
@@ -95,7 +96,7 @@ public:
         return m_thread_id;
     }
 private:
-    std::function<void(Bulk)> m_workFunction;
+    std::function<void(T)> m_workFunction;
     std::condition_variable m_condition;
     std::list<Bulk> m_queue;
     std::mutex m_mutex;
@@ -213,7 +214,7 @@ private:
     int m_blockCount;
 };
 
-class IBulker
+class IBulkHandler
 {
 public:
     virtual void push_back(Bulk commands) = 0;
@@ -222,26 +223,26 @@ public:
     void printStats()
     {
         std::cout << "Blocks" << std::endl;
-        for (std::map<Worker *,int>::iterator it = m_blockCount.begin(); it!=m_blockCount.end(); ++it)
+        for (std::map<Worker<Bulk> *,int>::iterator it = m_blockCount.begin(); it!=m_blockCount.end(); ++it)
             std::cout << "  " << it->first->getThreadId() << " => " << it->second << std::endl;
 
         std::cout << "Commands" << std::endl;
-        for (std::map<Worker *,int>::iterator it = m_commandCount.begin(); it!=m_commandCount.end(); ++it)
+        for (std::map<Worker<Bulk> *,int>::iterator it = m_commandCount.begin(); it!=m_commandCount.end(); ++it)
             std::cout << "  " << it->first->getThreadId() << " => " << it->second << std::endl;
     }
 
 protected:
 
-    void initStats(Worker *worker)
+    void initStats(Worker<Bulk> *worker)
     {
         if (m_blockCount.find(worker) == m_blockCount.end())
-            m_blockCount.insert( std::pair<Worker *, int>(worker, 0) );
+            m_blockCount.insert( std::pair<Worker<Bulk> *, int>(worker, 0) );
 
         if (m_commandCount.find(worker) == m_commandCount.end())
-            m_commandCount.insert( std::pair<Worker *, int>(worker, 0) );
+            m_commandCount.insert( std::pair<Worker<Bulk> *, int>(worker, 0) );
     }
 
-    void calcStats(Worker *worker, Bulk commands)
+    void calcStats(Worker<Bulk> *worker, Bulk commands)
     {
         initStats(worker);
 
@@ -249,11 +250,11 @@ protected:
         m_commandCount[worker] += commands.size();
     }
 
-    std::map<Worker *, int> m_blockCount;
-    std::map<Worker *, int> m_commandCount;
+    std::map<Worker<Bulk> *, int> m_blockCount;
+    std::map<Worker<Bulk> *, int> m_commandCount;
 };
 
-class ScreenWriter : public IBulker
+class ScreenWriter : public IBulkHandler
 {
 public:
 
@@ -280,10 +281,10 @@ public:
     }
 
 private:
-    Worker m_worker;
+    Worker<Bulk> m_worker;
 };
 
-class FileWriter : public IBulker
+class FileWriter : public IBulkHandler
 {
 public:
     FileWriter(int wrkCount)
@@ -291,7 +292,7 @@ public:
     {
         for (int i = 0; i < wrkCount; ++i)
         {
-            m_workers.push_back(std::move(Worker(std::bind(&FileWriter::write, this, std::placeholders::_1))));
+            m_workers.push_back(std::move(Worker<Bulk>(std::bind(&FileWriter::write, this, std::placeholders::_1))));
         }
     }
 
@@ -339,7 +340,7 @@ public:
     }
 
 private:
-    std::vector<Worker> m_workers;
+    std::vector<Worker<Bulk> > m_workers;
     int m_roundRobin;
 };
 
